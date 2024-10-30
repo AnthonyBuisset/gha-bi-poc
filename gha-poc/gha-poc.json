@@ -1,0 +1,45 @@
+{
+  "name" : "gha-poc",
+  "jobMode" : "VISUAL",
+  "description" : "",
+  "role" : "arn:aws:iam::113659546096:role/glue-poc",
+  "executionProperty" : {
+    "maxConcurrentRuns" : 1
+  },
+  "command" : {
+    "name" : "glueetl",
+    "scriptLocation" : "s3://aws-glue-assets-113659546096-eu-west-3/scripts/gha-poc.py",
+    "pythonVersion" : "3"
+  },
+  "defaultArguments" : {
+    "--enable-metrics" : "true",
+    "--enable-spark-ui" : "true",
+    "--spark-event-logs-path" : "s3://aws-glue-assets-113659546096-eu-west-3/sparkHistoryLogs/",
+    "--table_name" : "githubarchive.day.20240310",
+    "--enable-job-insights" : "true",
+    "--enable-observability-metrics" : "true",
+    "--enable-glue-datacatalog" : "true",
+    "--enable-continuous-cloudwatch-log" : "true",
+    "--job-bookmark-option" : "job-bookmark-disable",
+    "--job-language" : "python",
+    "--TempDir" : "s3://aws-glue-assets-113659546096-eu-west-3/temporary/"
+  },
+  "connections" : {
+    "connections" : [ "Bigquery connection" ]
+  },
+  "maxRetries" : 0,
+  "allocatedCapacity" : 10,
+  "timeout" : 2880,
+  "maxCapacity" : 10.0,
+  "glueVersion" : "4.0",
+  "numberOfWorkers" : 10,
+  "workerType" : "G.1X",
+  "executionClass" : "STANDARD",
+  "codeGenConfigurationNodes" : "{\"node-1730287577926\":{\"ConnectorDataSource\":{\"ConnectionType\":\"bigquery\",\"Data\":{\"connectionName\":\"Bigquery connection\",\"parentProject\":\"od-develop\",\"sourceType\":\"table\",\"table\":\"githubarchive.day.20240310\"},\"Name\":\"Google BigQuery\",\"OutputSchemas\":[{\"Columns\":[{\"Name\":\"type\",\"Type\":\"string\"},{\"Name\":\"public\",\"Type\":\"boolean\"},{\"Name\":\"payload\",\"Type\":\"string\"},{\"Name\":\"repo\",\"Type\":\"struct<id:bigint,name:string,url:string>\"},{\"Name\":\"actor\",\"Type\":\"struct<id:bigint,login:string,gravatar_id:string,avatar_url:string,url:string>\"},{\"Name\":\"org\",\"Type\":\"struct<id:bigint,login:string,gravatar_id:string,avatar_url:string,url:string>\"},{\"Name\":\"created_at\",\"Type\":\"timestamp\"},{\"Name\":\"id\",\"Type\":\"string\"},{\"Name\":\"other\",\"Type\":\"string\"}]}]}},\"node-1730291437502\":{\"CustomCode\":{\"ClassName\":\"MyTransform\",\"Code\":\"return dfc.map(lambda df, _: df.map(lambda event: {\\n    'id': event.id,\\n    'actor_id': event.actor.id,\\n    'repo_id': event.repo.id,\\n    'org_id': event.org.id if event.org is not None else None,\\n    'event': json.dumps(event)\\n}))\",\"Inputs\":[\"node-1730287577926\"],\"Name\":\"Custom Transform\",\"OutputSchemas\":[{\"Columns\":[]}]}},\"node-1730298316360\":{\"SelectFromCollection\":{\"Index\":0,\"Inputs\":[\"node-1730291437502\"],\"Name\":\"Select From Collection\"}},\"node-1730288143405\":{\"S3GlueParquetTarget\":{\"AutoDataQuality\":{\"IsEnabled\":false},\"Compression\":\"snappy\",\"Inputs\":[\"node-1730298316360\"],\"Name\":\"Amazon S3\",\"PartitionKeys\":[],\"Path\":\"s3://gha-antho-poc\",\"SchemaChangePolicy\":{\"Database\":\"gha_db\",\"EnableUpdateCatalog\":true,\"Table\":\"gha_data\",\"UpdateBehavior\":\"UPDATE_IN_DATABASE\"}}}}",
+  "sourceControlDetails" : {
+    "provider" : "GITHUB",
+    "repository" : "gha-bi-poc",
+    "branch" : "master",
+    "folder" : "gha-poc"
+  }
+}
